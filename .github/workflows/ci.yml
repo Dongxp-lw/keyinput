@@ -70,7 +70,7 @@ jobs:
       - name: 导出 ANDROID_NDK_HOME（cargo-ndk 据此交叉编译）
         run: echo "ANDROID_NDK_HOME=${ANDROID_SDK_ROOT}/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
       - name: 配置 Gradle（含缓存）
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
       - name: assembleDebug（经 cargo-ndk 出 4 ABI .so + uniffi 绑定）
         working-directory: apps/android
         run: |
