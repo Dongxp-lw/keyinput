@@ -158,7 +158,10 @@ mod tests {
         repo.upsert(login("e1", "GitHub", "octocat", "pw1"));
         repo.upsert(login("e1", "GitHub (renamed)", "octocat", "pw1"));
         assert_eq!(repo.list().len(), 1);
-        assert_eq!(repo.get(&EntryId::new("e1")).unwrap().title, "GitHub (renamed)");
+        assert_eq!(
+            repo.get(&EntryId::new("e1")).unwrap().title,
+            "GitHub (renamed)"
+        );
     }
 
     #[test]

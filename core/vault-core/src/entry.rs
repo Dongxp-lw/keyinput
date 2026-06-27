@@ -358,9 +358,18 @@ mod tests {
                 require_reauth: false
             }
         );
-        assert_eq!(FieldKind::Password.default_policy().sensitivity, Sensitivity::High);
-        assert_eq!(FieldKind::Totp.default_policy().sensitivity, Sensitivity::High);
-        assert_eq!(FieldKind::Note.default_policy().sensitivity, Sensitivity::Sensitive);
+        assert_eq!(
+            FieldKind::Password.default_policy().sensitivity,
+            Sensitivity::High
+        );
+        assert_eq!(
+            FieldKind::Totp.default_policy().sensitivity,
+            Sensitivity::High
+        );
+        assert_eq!(
+            FieldKind::Note.default_policy().sensitivity,
+            Sensitivity::Sensitive
+        );
         assert_eq!(
             FieldKind::Secret.default_policy().input_behavior,
             InputBehavior::RevealOnly
@@ -451,8 +460,12 @@ mod tests {
     fn zeroize_secrets_clears_field_values_and_totp_seed() {
         let mut c = VaultContent::new();
         let mut e = Entry::new(EntryId::new("e"), "T", EntryType::Login, 0);
-        let mut f =
-            Field::with_defaults(FieldId::new("f"), "Password", FieldKind::Password, "hunter2");
+        let mut f = Field::with_defaults(
+            FieldId::new("f"),
+            "Password",
+            FieldKind::Password,
+            "hunter2",
+        );
         f.totp = Some(TotpField {
             issuer: "i".into(),
             account_name: "a".into(),

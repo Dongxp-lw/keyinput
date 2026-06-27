@@ -16,8 +16,8 @@ use zeroize::Zeroize;
 
 use crate::codec::UnknownFields;
 use crate::entry::{
-    Entry, EntryId, EntryType, Field, FieldId, FieldKind, InputBehavior, Sensitivity, TotpAlgorithm,
-    TotpField,
+    Entry, EntryId, EntryType, Field, FieldId, FieldKind, InputBehavior, Sensitivity,
+    TotpAlgorithm, TotpField,
 };
 use crate::error::{VaultError, VaultResult};
 use crate::generator::{self, PasswordPolicy};
@@ -265,7 +265,10 @@ impl VaultCore {
         f(guard.as_ref().ok_or(VaultError::Locked)?)
     }
 
-    fn with_session_mut<T>(&self, f: impl FnOnce(&mut Session) -> VaultResult<T>) -> VaultResult<T> {
+    fn with_session_mut<T>(
+        &self,
+        f: impl FnOnce(&mut Session) -> VaultResult<T>,
+    ) -> VaultResult<T> {
         let mut guard = self.inner.lock().expect("vault mutex poisoned");
         f(guard.as_mut().ok_or(VaultError::Locked)?)
     }
@@ -295,7 +298,12 @@ impl VaultCore {
     }
 
     /// 用主密码解锁已有保险库字节，建立会话。
-    pub fn unlock(&self, bytes: Vec<u8>, mut master_password: Vec<u8>, now: i64) -> VaultResult<()> {
+    pub fn unlock(
+        &self,
+        bytes: Vec<u8>,
+        mut master_password: Vec<u8>,
+        now: i64,
+    ) -> VaultResult<()> {
         let session = Session::unlock(&bytes, &master_password, now);
         master_password.zeroize();
         *self.inner.lock().expect("vault mutex poisoned") = Some(session?);
@@ -368,7 +376,11 @@ impl VaultCore {
 
     /// 软删除条目；返回是否命中。
     pub fn delete_entry(&self, id: String, now: i64) -> VaultResult<bool> {
-        self.with_session_mut(|s| Ok(s.vault_mut().entries_mut().soft_delete(&EntryId::new(id), now)))
+        self.with_session_mut(|s| {
+            Ok(s.vault_mut()
+                .entries_mut()
+                .soft_delete(&EntryId::new(id), now))
+        })
     }
 
     /// 读取某字段的明文值（不存在返回 `None`）。返回值为秘密，平台用后尽快清理。
@@ -378,23 +390,21 @@ impl VaultCore {
         field_id: String,
     ) -> VaultResult<Option<String>> {
         self.with_session(|s| {
-            Ok(s.vault().entries().get(&EntryId::new(entry_id)).and_then(|e| {
-                e.fields
-                    .iter()
-                    .find(|f| f.id.0 == field_id)
-                    .map(|f| f.value.clone())
-            }))
+            Ok(s.vault()
+                .entries()
+                .get(&EntryId::new(entry_id))
+                .and_then(|e| {
+                    e.fields
+                        .iter()
+                        .find(|f| f.id.0 == field_id)
+                        .map(|f| f.value.clone())
+                }))
         })
     }
 
     /// 平台在使用会话时调用，刷新空闲计时基准。
     pub fn touch(&self, now: i64) {
-        if let Some(s) = self
-            .inner
-            .lock()
-            .expect("vault mutex poisoned")
-            .as_mut()
-        {
+        if let Some(s) = self.inner.lock().expect("vault mutex poisoned").as_mut() {
             s.touch(now);
         }
     }
@@ -419,7 +429,8 @@ impl VaultCore {
             source_device_label: options.source_device_label,
             created_at: options.created_at,
         };
-        let result = self.with_session(|s| imex::export(s.vault().entries().content(), &passphrase, &opts));
+        let result =
+            self.with_session(|s| imex::export(s.vault().entries().content(), &passphrase, &opts));
         passphrase.zeroize();
         result
     }
@@ -541,9 +552,7 @@ mod tests {
 
         // unlock 用文件头里的快参 → 快。
         let core2 = VaultCore::new();
-        core2
-            .unlock(bytes, b"master pw".to_vec(), 1)
-            .unwrap();
+        core2.unlock(bytes, b"master pw".to_vec(), 1).unwrap();
         assert_eq!(
             core2
                 .get_field_value("e1".into(), "u".into())
@@ -591,7 +600,8 @@ mod tests {
             let mut e = Entry::new(EntryId::new("e1"), "GitHub", EntryType::Login, 0);
             e.unknown
                 .insert("futureField".into(), CborValue::Text("keep".into()));
-            let mut f = Field::with_defaults(FieldId::new("u"), "User", FieldKind::Username, "octocat");
+            let mut f =
+                Field::with_defaults(FieldId::new("u"), "User", FieldKind::Username, "octocat");
             f.unknown.insert("ff".into(), CborValue::Bool(true));
             e.fields.push(f);
             repo.upsert(e);

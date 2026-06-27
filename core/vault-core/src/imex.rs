@@ -80,7 +80,12 @@ pub fn export(
     passphrase: &[u8],
     options: &ExportOptions,
 ) -> VaultResult<Vec<u8>> {
-    export_with_params(content, passphrase, options, KdfParams::production_default()?)
+    export_with_params(
+        content,
+        passphrase,
+        options,
+        KdfParams::production_default()?,
+    )
 }
 
 /// 用指定 KDF 参数导出（供低内存降级与测试注入快参）。
@@ -276,6 +281,9 @@ mod tests {
         tampered[last] ^= 0x01;
         assert!(import(&tampered, b"export pass").is_err());
         // 同一份合法导出仍可正常导入（前一次失败未污染任何状态）。
-        assert_eq!(import(&export_sample(), b"export pass").unwrap(), sample_content());
+        assert_eq!(
+            import(&export_sample(), b"export pass").unwrap(),
+            sample_content()
+        );
     }
 }

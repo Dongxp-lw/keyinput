@@ -113,7 +113,13 @@ pub fn seal(key: &SecretKey, aad: &[u8], plaintext: &[u8]) -> Result<Vec<u8>, Cr
     let nonce_bytes = random_bytes(NONCE_LEN)?;
     let nonce = XNonce::from_slice(&nonce_bytes);
     let ct = cipher
-        .encrypt(nonce, Payload { msg: plaintext, aad })
+        .encrypt(
+            nonce,
+            Payload {
+                msg: plaintext,
+                aad,
+            },
+        )
         .map_err(|_| CryptoError::Aead)?;
     let mut out = Vec::with_capacity(NONCE_LEN + ct.len());
     out.extend_from_slice(&nonce_bytes);
@@ -201,7 +207,10 @@ mod tests {
     fn seal_open_roundtrips_with_aad() {
         let key = random_dek().unwrap();
         let sealed = seal(&key, b"header-aad", b"top secret payload").unwrap();
-        assert_eq!(open(&key, b"header-aad", &sealed).unwrap(), b"top secret payload");
+        assert_eq!(
+            open(&key, b"header-aad", &sealed).unwrap(),
+            b"top secret payload"
+        );
     }
 
     #[test]
@@ -218,12 +227,18 @@ mod tests {
         let key = random_dek().unwrap();
         let sealed = seal(&key, b"aad-1", b"data").unwrap();
         assert_eq!(open(&key, b"aad-2", &sealed), Err(CryptoError::Aead));
-        assert_eq!(open(&random_dek().unwrap(), b"aad-1", &sealed), Err(CryptoError::Aead));
+        assert_eq!(
+            open(&random_dek().unwrap(), b"aad-1", &sealed),
+            Err(CryptoError::Aead)
+        );
     }
 
     #[test]
     fn open_rejects_truncated_input() {
-        assert_eq!(open(&random_dek().unwrap(), b"", b"short"), Err(CryptoError::Aead));
+        assert_eq!(
+            open(&random_dek().unwrap(), b"", b"short"),
+            Err(CryptoError::Aead)
+        );
     }
 
     #[test]
@@ -292,13 +307,19 @@ mod tests {
     /// 证明 `derive_kek` 正确传入 m/t/p/taglen 与算法/版本。结合上一个 RFC KAT 即证其符合 RFC。
     #[test]
     fn derive_kek_wires_argon2id_v0x13() {
-        let kdf = KdfParams { m_kib: 64, t: 2, p: 1, salt: vec![0x10; 16] };
+        let kdf = KdfParams {
+            m_kib: 64,
+            t: 2,
+            p: 1,
+            salt: vec![0x10; 16],
+        };
         let pw = b"kat-wiring-password";
         let got = derive_kek(pw, &kdf).unwrap();
         let params = Params::new(64, 2, 1, Some(KEY_LEN)).unwrap();
         let ctx = Argon2::new(Algorithm::Argon2id, Version::V0x13, params);
         let mut expected = [0u8; KEY_LEN];
-        ctx.hash_password_into(pw, &kdf.salt, &mut expected).unwrap();
+        ctx.hash_password_into(pw, &kdf.salt, &mut expected)
+            .unwrap();
         assert!(got.ct_eq(&SecretKey::new(expected)));
     }
 

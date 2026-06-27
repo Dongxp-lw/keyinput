@@ -91,7 +91,12 @@ pub fn generate(params: &TotpParameters, now_epoch_seconds: i64) -> VaultResult<
     let period = i64::from(params.period_seconds);
     // T = floorDiv(now - T0, X)；div_euclid 在除数为正时等于向下取整，2038 年后仍用 64 位。
     let time_step = (now_epoch_seconds - params.t0_seconds).div_euclid(period);
-    let code = hotp(&params.secret, time_step as u64, params.algorithm, params.digits)?;
+    let code = hotp(
+        &params.secret,
+        time_step as u64,
+        params.algorithm,
+        params.digits,
+    )?;
 
     let valid_until = (time_step + 1) * period + params.t0_seconds;
     let seconds_remaining = (valid_until - now_epoch_seconds).max(0) as u32;
@@ -132,17 +137,23 @@ mod tests {
         ];
         for &(t, c_sha1, c_sha256, c_sha512) in cases {
             assert_eq!(
-                generate(&params(TotpAlgorithm::Sha1, seed(20)), t).unwrap().code,
+                generate(&params(TotpAlgorithm::Sha1, seed(20)), t)
+                    .unwrap()
+                    .code,
                 c_sha1,
                 "SHA1 @ {t}"
             );
             assert_eq!(
-                generate(&params(TotpAlgorithm::Sha256, seed(32)), t).unwrap().code,
+                generate(&params(TotpAlgorithm::Sha256, seed(32)), t)
+                    .unwrap()
+                    .code,
                 c_sha256,
                 "SHA256 @ {t}"
             );
             assert_eq!(
-                generate(&params(TotpAlgorithm::Sha512, seed(64)), t).unwrap().code,
+                generate(&params(TotpAlgorithm::Sha512, seed(64)), t)
+                    .unwrap()
+                    .code,
                 c_sha512,
                 "SHA512 @ {t}"
             );

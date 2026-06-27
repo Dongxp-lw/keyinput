@@ -32,10 +32,8 @@ jobs:
           components: clippy, rustfmt
       - name: 缓存 cargo 构建
         uses: Swatinem/rust-cache@v2
-      # 现有代码尚未做过一次性 `cargo fmt`，故先作建议性（continue-on-error）；
-      # 待一次性格式化后改为阻断（见 .agent/state.md 备注）。clippy -D warnings 才是当前阻断质量门。
-      - name: 格式检查（rustfmt，建议性）
-        continue-on-error: true
+      # 已做过一次性 `cargo fmt --all`，rustfmt 现为阻断质量门（与 clippy -D warnings 并列）。
+      - name: 格式检查（rustfmt）
         run: cargo fmt --all -- --check
       - name: 静态检查（clippy，-D warnings）
         run: cargo clippy -p vault-core --lib --tests -- -D warnings
