@@ -1,0 +1,34 @@
+[package]
+name = "vault-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.96"
+description = "Private Input Vault 共享核心：保险库格式、密码学、领域逻辑、TOTP、导出/导入与迁移/同步逻辑。"
+publish = false
+
+[lib]
+# 内部库名（与品牌无关）：vault_core。
+# lib 供 Rust 单元测试与 uniffi-bindgen 使用；cdylib 供各端打包 .so/.dll。
+name = "vault_core"
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+argon2 = "0.5.3"
+chacha20poly1305 = "0.10.1"
+getrandom = "0.2"
+hkdf = "0.13.0"
+sha2 = "0.11.0"
+subtle = "2.6.1"
+uniffi = "0.31.2"
+zeroize = { version = "1.9.0", features = ["derive"] }
+
+[features]
+# 仅在生成绑定时启用，使默认 / 各端 cdylib 构建保持精简（不带 clap 等 CLI 依赖）。
+bindgen = ["uniffi/cli"]
+
+# uniffi-bindgen 命令行（库模式，由已编译的 cdylib 生成各端绑定）。见 L0-05b。
+# 用法：cargo run --features bindgen --bin uniffi-bindgen -- generate --library <cdylib> --language kotlin --out-dir <dir>
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+required-features = ["bindgen"]

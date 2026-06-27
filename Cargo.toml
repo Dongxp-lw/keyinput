@@ -1,0 +1,6 @@
+# Cargo 工作区根：Private Input Vault 共享核心（Rust）。
+# 结构与契约见 docs/technical/module-architecture.md（L1）；
+# 构建系统与规范见 docs/technical/engineering-foundation.md（L0）。
+[workspace]
+resolver = "2"
+members = ["core/vault-core"]

@@ -1,0 +1,8 @@
+# 固定 Rust 工具链（见 docs/technical/engineering-foundation.md §4）。
+# 现用 stable（本机已装），避免重复下载具体版本工具链；
+# 锁定到精确版本（如 "1.96.0"）以保证可复现，推迟到 CI 落地（L0-05e）。
+# Android 交叉编译 target（aarch64/armv7/x86_64/i686-linux-android）
+# 在 L0-05c 接入 cargo-ndk 时再加入，避免现在拉取无关的 std。
+[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]
