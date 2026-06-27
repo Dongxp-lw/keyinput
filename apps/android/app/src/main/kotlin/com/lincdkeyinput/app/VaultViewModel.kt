@@ -48,7 +48,7 @@ sealed interface Screen {
  */
 class VaultViewModel(app: Application) : AndroidViewModel(app) {
 
-    private val manager = (app as VaultApplication).vaultManager
+    private val manager by lazy { getApplication<VaultApplication>().vaultManager }
     private val gate = BiometricGate(app)
 
     private val _uiState = MutableStateFlow<VaultUiState>(VaultUiState.Loading)
@@ -86,18 +86,21 @@ class VaultViewModel(app: Application) : AndroidViewModel(app) {
     fun biometricUnlockReady(): Boolean = gate.isHardwareAvailable() && gate.isEnabled()
 
     init {
-        // 启动期的磁盘读取（保险库是否存在、失败计数、生物识别开关）放到后台线程，
-        // 避免主线程 IO（StrictMode）；期间 UI 停留在 Loading。
+        // 启动期的磁盘读取（native 库加载、保险库是否存在、失败计数、生物识别开关）放到
+        // 后台线程，避免主线程 IO（StrictMode）；期间 UI 停留在 Loading。
         viewModelScope.launch {
             val now = System.currentTimeMillis()
             _failedAttempts.value = withContext(Dispatchers.Default) { throttle.failedAttempts() }
             _biometricEnabled.value = withContext(Dispatchers.Default) { gate.isEnabled() }
+            // 首次访问 manager（lazy）会构造 VaultCore 并加载 native .so —— 放后台线程。
+            val unlocked = withContext(Dispatchers.Default) { manager.isUnlocked() }
+            val exists = !unlocked && withContext(Dispatchers.Default) { manager.vaultExists() }
             when {
-                manager.isUnlocked() -> {
+                unlocked -> {
                     _uiState.value = VaultUiState.Unlocked
                     refresh()
                 }
-                withContext(Dispatchers.Default) { manager.vaultExists() } -> {
+                exists -> {
                     _uiState.value = VaultUiState.Locked
                     if (withContext(Dispatchers.Default) { throttle.remainingLockMs(now) } > 0) startLockoutCountdown()
                 }
@@ -122,25 +125,25 @@ class VaultViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun unlock(password: ByteArray) {
-        val remaining = throttle.remainingLockMs(System.currentTimeMillis())
-        if (remaining > 0) {
-            password.fill(0)
-            _message.value = "尝试过于频繁，请 ${(remaining + 999) / 1000} 秒后再试"
-            startLockoutCountdown()
-            return
-        }
         viewModelScope.launch {
+            val remaining = withContext(Dispatchers.Default) { throttle.remainingLockMs(System.currentTimeMillis()) }
+            if (remaining > 0) {
+                password.fill(0)
+                _message.value = "尝试过于频繁，请 ${(remaining + 999) / 1000} 秒后再试"
+                startLockoutCountdown()
+                return@launch
+            }
             _busy.value = true
             try {
                 manager.unlock(password)
                 password.fill(0)
-                throttle.recordSuccess()
+                withContext(Dispatchers.Default) { throttle.recordSuccess() }
                 _failedAttempts.value = 0
                 _lockoutRemainingSec.value = 0
                 enterUnlocked()
             } catch (e: VaultException.WrongPasswordOrTampered) {
                 password.fill(0)
-                val s = throttle.recordFailure(System.currentTimeMillis())
+                val s = withContext(Dispatchers.Default) { throttle.recordFailure(System.currentTimeMillis()) }
                 _failedAttempts.value = s.failedAttempts
                 _message.value = wrongPasswordMessage(s)
                 if (s.lockedUntilMs > System.currentTimeMillis()) startLockoutCountdown()
@@ -166,7 +169,7 @@ class VaultViewModel(app: Application) : AndroidViewModel(app) {
         lockoutJob?.cancel()
         lockoutJob = viewModelScope.launch {
             while (true) {
-                val remMs = throttle.remainingLockMs(System.currentTimeMillis())
+                val remMs = withContext(Dispatchers.Default) { throttle.remainingLockMs(System.currentTimeMillis()) }
                 val sec = ((remMs + 999) / 1000).toInt()
                 _lockoutRemainingSec.value = sec
                 if (sec <= 0) break

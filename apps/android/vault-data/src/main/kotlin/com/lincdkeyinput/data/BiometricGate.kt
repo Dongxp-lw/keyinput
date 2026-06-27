@@ -30,7 +30,8 @@ import javax.crypto.spec.GCMParameterSpec
 class BiometricGate(context: Context) {
 
     private val appContext = context.applicationContext
-    private val bioFile = File(appContext.filesDir, BIO_FILE)
+    // 惰性解析：filesDir 会触发磁盘访问，放到首次真正用到时，避免在构造时于主线程做 IO（StrictMode）。
+    private val bioFile: File by lazy { File(appContext.filesDir, BIO_FILE) }
 
     /** 设备是否具备可用的强生物识别（已录入且硬件就绪）。 */
     fun isHardwareAvailable(): Boolean =

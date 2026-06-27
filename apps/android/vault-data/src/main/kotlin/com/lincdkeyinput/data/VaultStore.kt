@@ -12,7 +12,10 @@ class VaultStore(
     context: Context,
     private val fileName: String = DEFAULT_VAULT_FILE,
 ) {
-    private val dir: File = context.applicationContext.filesDir
+    private val appContext: Context = context.applicationContext
+    // 惰性解析：`filesDir` 会触发磁盘访问，放到首次真正读写时（通常已在后台线程），
+    // 避免在构造时于主线程做 IO（StrictMode）。
+    private val dir: File by lazy { appContext.filesDir }
     private val file: File get() = File(dir, fileName)
 
     fun exists(): Boolean = file.exists()

@@ -76,9 +76,10 @@ private fun VaultApp(vm: VaultViewModel = viewModel()) {
             VaultUiState.Locked -> {
                 val failedAttempts by vm.failedAttempts.collectAsStateWithLifecycle()
                 val lockoutRemainingSec by vm.lockoutRemainingSec.collectAsStateWithLifecycle()
+                val biometricEnabled by vm.biometricEnabled.collectAsStateWithLifecycle()
                 UnlockScreen(
                     busy = busy,
-                    biometricAvailable = vm.biometricUnlockReady(),
+                    biometricAvailable = biometricEnabled && vm.biometricHardwareAvailable(),
                     failedAttempts = failedAttempts,
                     lockoutRemainingSec = lockoutRemainingSec,
                     onUnlock = vm::unlock,

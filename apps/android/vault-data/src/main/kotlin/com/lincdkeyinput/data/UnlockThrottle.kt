@@ -12,7 +12,9 @@ import java.io.File
  */
 class UnlockThrottle(context: Context) {
 
-    private val file = File(context.applicationContext.filesDir, FILE)
+    private val appContext = context.applicationContext
+    // 惰性解析：filesDir 触发磁盘访问，放到首次真正读写时（已在后台线程），避免构造时主线程 IO（StrictMode）。
+    private val file: File by lazy { File(appContext.filesDir, FILE) }
 
     data class State(val failedAttempts: Int, val lockedUntilMs: Long)
 
