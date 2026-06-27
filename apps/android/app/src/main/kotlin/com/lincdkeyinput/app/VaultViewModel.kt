@@ -9,12 +9,14 @@ import com.lincdkeyinput.data.Base32
 import com.lincdkeyinput.data.BiometricGate
 import com.lincdkeyinput.data.ClipboardHelper
 import com.lincdkeyinput.data.UnlockThrottle
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import uniffi.vault_core.EntrySummary
 import uniffi.vault_core.FfiEntry
 import uniffi.vault_core.FfiExportOptions
@@ -68,13 +70,13 @@ class VaultViewModel(app: Application) : AndroidViewModel(app) {
     val message: StateFlow<String?> = _message.asStateFlow()
 
     private val throttle = UnlockThrottle(app)
-    private val _failedAttempts = MutableStateFlow(throttle.failedAttempts())
+    private val _failedAttempts = MutableStateFlow(0)
     val failedAttempts: StateFlow<Int> = _failedAttempts.asStateFlow()
     private val _lockoutRemainingSec = MutableStateFlow(0)
     val lockoutRemainingSec: StateFlow<Int> = _lockoutRemainingSec.asStateFlow()
     private var lockoutJob: Job? = null
 
-    private val _biometricEnabled = MutableStateFlow(gate.isEnabled())
+    private val _biometricEnabled = MutableStateFlow(false)
     val biometricEnabled: StateFlow<Boolean> = _biometricEnabled.asStateFlow()
 
     /** 设备硬件是否支持强生物识别。 */
@@ -84,16 +86,23 @@ class VaultViewModel(app: Application) : AndroidViewModel(app) {
     fun biometricUnlockReady(): Boolean = gate.isHardwareAvailable() && gate.isEnabled()
 
     init {
-        when {
-            manager.isUnlocked() -> {
-                _uiState.value = VaultUiState.Unlocked
-                refresh()
+        // 启动期的磁盘读取（保险库是否存在、失败计数、生物识别开关）放到后台线程，
+        // 避免主线程 IO（StrictMode）；期间 UI 停留在 Loading。
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            _failedAttempts.value = withContext(Dispatchers.Default) { throttle.failedAttempts() }
+            _biometricEnabled.value = withContext(Dispatchers.Default) { gate.isEnabled() }
+            when {
+                manager.isUnlocked() -> {
+                    _uiState.value = VaultUiState.Unlocked
+                    refresh()
+                }
+                withContext(Dispatchers.Default) { manager.vaultExists() } -> {
+                    _uiState.value = VaultUiState.Locked
+                    if (withContext(Dispatchers.Default) { throttle.remainingLockMs(now) } > 0) startLockoutCountdown()
+                }
+                else -> _uiState.value = VaultUiState.Onboarding
             }
-            manager.vaultExists() -> {
-                _uiState.value = VaultUiState.Locked
-                if (throttle.remainingLockMs(System.currentTimeMillis()) > 0) startLockoutCountdown()
-            }
-            else -> _uiState.value = VaultUiState.Onboarding
         }
     }
 
