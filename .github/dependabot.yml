@@ -25,6 +25,15 @@ updates:
     labels:
       - "dependencies"
       - "android"
+    ignore:
+      # AGP 固定在 8.7.x（D-013：用现成 android-35，避免装 cmdline-tools/android-36）；
+      # 不接受 9.x 大版本跳变。8.x 的小版本/补丁仍允许。
+      - dependency-name: "com.android.application"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.android.library"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.android.tools.build:gradle"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
