@@ -1,0 +1,45 @@
+# cargo-deny 配置：供应链门禁（许可证合规 + 安全公告 + 依赖来源）。
+# 本地运行：cargo install cargo-deny && cargo deny check
+# CI 中由 .github/workflows/ci.yml 的 supply-chain job 执行。
+# 文档：https://embarkstudios.github.io/cargo-deny/
+
+[graph]
+all-features = true
+
+[advisories]
+# 使用 RustSec 公告库；有公告即报错（除非在 ignore 中显式豁免并记原因）。
+version = 2
+yanked = "deny"
+ignore = []
+
+[licenses]
+version = 2
+# 只允许宽松许可证（与本项目 Apache-2.0 兼容）。新依赖若引入其它许可证，
+# CI 会失败，须评审后在此显式增列并在 PR 说明理由。
+allow = [
+    "Apache-2.0",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-DFS-2016",
+    "Unicode-3.0",
+    "MPL-2.0",
+    "CC0-1.0",
+]
+confidence-threshold = 0.9
+exceptions = []
+
+[bans]
+# 防止意外引入重复/多版本依赖与高风险包。
+multiple-versions = "warn"
+wildcards = "deny"
+allow = []
+deny = []
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

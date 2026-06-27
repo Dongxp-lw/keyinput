@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 安全键盘 IME 元数据（L4-KBD）。仅声明一个普通键盘子类型。 -->
+<input-method xmlns:android="http://schemas.android.com/apk/res/android">
+    <subtype
+        android:label="@string/ime_label"
+        android:imeSubtypeMode="keyboard" />
+</input-method>

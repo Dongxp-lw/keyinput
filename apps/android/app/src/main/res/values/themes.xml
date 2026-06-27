@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose 自带 UI，Android 主题只需无 ActionBar。颜色由 Compose Material3 主题决定。 -->
+    <style name="Theme.PrivateInputVault" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

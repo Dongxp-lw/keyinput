@@ -15,8 +15,13 @@ crate-type = ["lib", "cdylib"]
 [dependencies]
 argon2 = "0.5.3"
 chacha20poly1305 = "0.10.1"
+ciborium = "0.2.2"
 getrandom = "0.2"
 hkdf = "0.13.0"
+hmac = "0.13.0"
+serde = { version = "1", features = ["derive"] }
+serde_bytes = "0.11"
+sha1 = "0.11.0"
 sha2 = "0.11.0"
 subtle = "2.6.1"
 uniffi = "0.31.2"

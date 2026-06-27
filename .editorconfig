@@ -1,0 +1,38 @@
+# EditorConfig：统一各编辑器的基本风格。https://editorconfig.org
+# 与 Kotlin（ktlint/detekt）、Rust（rustfmt）的官方风格一致：均为 4 空格缩进。
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+max_line_length = 100
+
+# Kotlin / Kotlin Script
+[*.{kt,kts}]
+indent_size = 4
+# ktlint 默认行宽
+max_line_length = 120
+
+# Rust
+[*.rs]
+indent_size = 4
+max_line_length = 100
+
+# 配置 / 数据文件用 2 空格
+[*.{toml,yml,yaml,json,gradle}]
+indent_size = 2
+
+[*.md]
+# Markdown 行尾两空格有语义，不裁剪
+trim_trailing_whitespace = false
+
+# 由工具/平台维护的文件，保持原样
+[gradlew.bat]
+end_of_line = crlf
+
+[{Makefile,*.mk}]
+indent_style = tab

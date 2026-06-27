@@ -7,12 +7,30 @@
 //!
 //! 当前含 L0-05a 骨架 + L0-05b 的 FFI 连通性自检函数（`ping`）；业务接口尚未导出。
 //!
-//! L2 起新增内部核心模块：[`secret`]（秘密类型与清零）、[`crypto`]（Argon2id KDF /
-//! XChaCha20-Poly1305 AEAD / 信封密钥 / HKDF 子密钥）。这些是纯 Rust、可确定性测试的
-//! 内部实现，尚未跨 FFI 暴露（FFI 表面见 L2-06）。
+//! L2 起新增核心模块：[`secret`]（秘密类型与清零）、[`crypto`]（Argon2id KDF /
+//! XChaCha20-Poly1305 AEAD / 信封密钥 / HKDF 子密钥）、[`codec`]（CBOR 序列化，保未知字段）、
+//! [`error`]（对外统一错误 [`error::VaultError`]，经 UniFFI 映射）。L3 起新增领域核心：
+//! [`entry`]（条目/字段模型 + 默认策略 + 载荷编解码）、[`repository`]（条目 CRUD + 本地搜索）、
+//! [`vault`]（保险库文件格式 + 创建/打开/保存/改口令，用 L2 加密 + L2-04 错误）、
+//! [`lock`]（解锁会话：最小持有会话密钥 + 显式锁定清零 + 纯空闲判定）、[`rng`]（CSPRNG +
+//! 无偏置采样）、[`generator`]（密码生成器）、[`totp`]（RFC 6238 TOTP 生成）、
+//! [`imex`]（加密导出/导入：独立迁移包，跨设备复用域分离子密钥）、[`ffi`]（L2-06：`VaultCore`
+//! 经 UniFFI 导出的业务表面）。
+//! 其中 `secret`/`crypto`/`codec` 是纯 Rust 内部实现。
 
+pub mod codec;
 pub mod crypto;
+pub mod entry;
+pub mod error;
+pub mod ffi;
+pub mod generator;
+pub mod imex;
+pub mod lock;
+pub mod repository;
+pub mod rng;
 pub mod secret;
+pub mod totp;
+pub mod vault;
 
 // UniFFI 脚手架（proc-macro 模式）。业务 API（见 docs/technical/module-architecture.md §4）
 // 自 L2-06 起逐步导出；当前仅一个连通性自检用的平凡函数（L0-05b）。

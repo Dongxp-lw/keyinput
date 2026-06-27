@@ -1,0 +1,49 @@
+Private Input Vault
+Copyright 2026 The Private Input Vault Authors
+
+This product is licensed under the Apache License, Version 2.0 (the
+"License"); you may not use this product except in compliance with the
+License. A copy of the License is distributed in the LICENSE file and is
+also available at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, this product is
+distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND. The authors are not responsible for modified or derivative versions
+of this work distributed by third parties (see Apache-2.0 §4(b): modified
+files must carry prominent notices stating they were changed).
+
+Project metadata (authoritative names, contacts, and repository) is
+centralized in project-config.toml.
+
+================================================================================
+Third-party open-source components
+================================================================================
+
+This product depends on, and (for some) redistributes in binary form,
+third-party open-source software. Each such component remains under its own
+license. The authoritative, version-pinned list is produced by the build
+manifests:
+
+  - Rust:    Cargo.toml / Cargo.lock
+  - Android: apps/android/gradle/libs.versions.toml and the Gradle build
+
+A curated overview of the principal components and the rationale for their
+selection is maintained in docs/technical/architecture.md (§2).
+
+Principal components and their commonly published licenses (verify against
+the manifests, which are the source of truth):
+
+  - RustCrypto crates (argon2, chacha20poly1305, hkdf, hmac, sha1, sha2,
+    zeroize, subtle, getrandom) ............ MIT OR Apache-2.0
+  - ciborium, serde, serde_bytes, anyhow ... MIT OR Apache-2.0
+  - Mozilla UniFFI ......................... MPL-2.0
+  - Java Native Access (JNA) ............... Apache-2.0 OR LGPL-2.1+
+  - AndroidX / Jetpack (Compose, lifecycle,
+    biometric, fragment, activity) ......... Apache-2.0
+  - Kotlin stdlib & coroutines ............. Apache-2.0
+  - ZXing core / zxing-android-embedded .... Apache-2.0
+
+If you redistribute this product, you must comply with the attribution and
+notice requirements of each component's license.

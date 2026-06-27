@@ -1,0 +1,124 @@
+# CI 雏形（L0-05e）。落实 [工程基础](../../docs/technical/engineering-foundation.md) §6 的阶段门：
+#   构建（cargo + gradle assemble）、测试（Rust 含 KAT + Android）、
+#   静态检查（clippy -D warnings / Android lint）、安全门（日志扫描无秘密 + MVP 无 INTERNET）、
+#   供应链门（cargo-deny：许可证白名单 + RustSec 安全公告 + 依赖来源，配置见 deny.toml）。
+#
+# 诚实说明：本文件在本地仅验证了「可本地复现」的门（security-gates 的 grep、Rust fmt/clippy/test）；
+# Android 交叉编译 job 与 cargo-deny job 依赖 CI runner 环境，**尚未在真实 GitHub runner 上跑通验证**。
+# detekt/ktlint 待接入（见 lint job 内 TODO）。
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+# 同分支并发时取消旧运行，省机时。
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust-core:
+    name: Rust 核心（fmt + clippy + test/KAT）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安装 Rust 工具链（stable + clippy + rustfmt）
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: 缓存 cargo 构建
+        uses: Swatinem/rust-cache@v2
+      # 现有代码尚未做过一次性 `cargo fmt`，故先作建议性（continue-on-error）；
+      # 待一次性格式化后改为阻断（见 .agent/state.md 备注）。clippy -D warnings 才是当前阻断质量门。
+      - name: 格式检查（rustfmt，建议性）
+        continue-on-error: true
+        run: cargo fmt --all -- --check
+      - name: 静态检查（clippy，-D warnings）
+        run: cargo clippy -p vault-core --lib --tests -- -D warnings
+      - name: 单元测试（含 RFC 标准 KAT）
+        run: cargo test -p vault-core --lib
+
+  android:
+    name: Android 构建 + lint
+    runs-on: ubuntu-latest
+    env:
+      # 与本机/工程一致的 NDK 版本（D-013）。
+      NDK_VERSION: "27.3.13750724"
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安装 JDK 17（Temurin）
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: 安装 Rust + 4 个 Android target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android
+      - name: 缓存 cargo 构建
+        uses: Swatinem/rust-cache@v2
+      - name: 安装 cargo-ndk
+        run: cargo install cargo-ndk --version 4.1.2 --locked
+      - name: 配置 Android SDK
+        uses: android-actions/setup-android@v3
+      - name: 安装 NDK r27
+        run: sdkmanager "ndk;${NDK_VERSION}"
+      - name: 导出 ANDROID_NDK_HOME（cargo-ndk 据此交叉编译）
+        run: echo "ANDROID_NDK_HOME=${ANDROID_SDK_ROOT}/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+      - name: 配置 Gradle（含缓存）
+        uses: gradle/actions/setup-gradle@v4
+      - name: assembleDebug（经 cargo-ndk 出 4 ABI .so + uniffi 绑定）
+        working-directory: apps/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :app:assembleDebug --no-daemon --console=plain --stacktrace
+      # Android lint：暂作建议性（continue-on-error），待基线清理干净后改为阻断。
+      - name: Android lint（建议性）
+        working-directory: apps/android
+        continue-on-error: true
+        run: ./gradlew :app:lintDebug --no-daemon --console=plain
+      # TODO(L0-05e 后续): 接入 detekt/ktlint（需先加插件与基线配置，避免一次性大量噪声）。
+
+  security-gates:
+    name: 安全门（日志扫描 + 无 INTERNET）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 禁止在发布代码中记日志（启发式扫描，不得泄露秘密）
+        run: |
+          set -euo pipefail
+          echo "扫描 Android 发布源码的日志调用…"
+          if grep -rEn 'Log\.[vdiwe]\(|Log\.wtf\(|android\.util\.Log|System\.(out|err)|printStackTrace|\bprintln\(' \
+              apps/android --include='*.kt' \
+              --exclude-dir=test --exclude-dir=androidTest --exclude-dir=build ; then
+            echo "::error::Android 发布代码中发现被禁的日志/打印调用"; exit 1
+          fi
+          echo "扫描 Rust 核心的打印/日志…"
+          if grep -rEn '\bprintln!|\beprintln!|\bdbg!|\bprint!|\beprint!|\blog::(error|warn|info|debug|trace)' \
+              core --include='*.rs' ; then
+            echo "::error::Rust 核心中发现被禁的打印/日志宏"; exit 1
+          fi
+          echo "OK：未发现日志/打印调用。"
+      - name: 离线保证：MVP 不声明 INTERNET 权限
+        run: |
+          set -euo pipefail
+          if grep -rEn '<uses-permission[^>]*android\.permission\.INTERNET' \
+              apps/android --include='AndroidManifest.xml' ; then
+            echo "::error::声明了 INTERNET 权限——离线保证被破坏"; exit 1
+          fi
+          echo "OK：未声明 INTERNET 权限。"
+
+  supply-chain:
+    name: 供应链门（cargo-deny：许可证 + 公告 + 来源）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # 据 deny.toml 校验：许可证白名单、RustSec 安全公告、依赖来源、重复版本。
+      - name: cargo-deny check
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check

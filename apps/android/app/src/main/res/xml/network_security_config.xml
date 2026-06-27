@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  纵深防御（MVP-010）：明确禁止明文（cleartext）网络流量。
+  本应用本就不声明 INTERNET 权限、不发起任何网络请求；此配置仅作审计加固与意图声明，
+  确保即便将来误引入网络代码，明文流量也被平台拒绝。
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

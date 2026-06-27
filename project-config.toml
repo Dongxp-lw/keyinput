@@ -1,0 +1,48 @@
+# ============================================================================
+# 项目配置（Project Config）—— 全项目「可配置项 / 占位值」的单一真相来源。
+# ----------------------------------------------------------------------------
+# 目的：把分散在各文档里的署名、联系方式、仓库地址、版本等集中到这里；
+#       发布前在此改一次，再按每项的「出现于」同步到少数几个文件即可。
+# 安全：本文件随 git 跟踪。**绝不**在此写任何密钥、口令、keystore 或秘密，
+#       只放非敏感的公开标识与联系方式。
+# 相关决策：D-012（应用 ID/品牌）、D-016（许可证）、D-017（治理规范）、D-018（仅本地 git）。
+# ============================================================================
+
+[project]
+name             = "Private Input Vault"            # 工作名（最终品牌待定，见 D-012）
+description      = "离线优先的私密输入键盘与加密保险库"
+license          = "Apache-2.0"                     # 见 D-016
+# 版权署名：可改为公司名或个人名。
+# 出现于：LICENSE（附录 Copyright 行）、NOTICE、docs/technical/release-process.md
+copyright_holder = "The Private Input Vault Authors"
+copyright_year   = "2026"
+
+[app]
+# 实际生效处：apps/android/app/build.gradle.kts 的 defaultConfig（此处为登记/真相来源，未自动注入构建）
+application_id   = "com.lincdkeyinput"              # D-012，发布前定稿
+version_name     = "0.2.0"
+version_code     = 1
+min_sdk          = 28
+target_sdk       = 35
+compile_sdk      = 35
+
+[contact]
+# 公开联系方式（发布前填真实值；为空 = 待定）。
+# 出现于：SECURITY.md、CODE_OF_CONDUCT.md
+security_email   = ""   # 安全漏洞私密报告
+conduct_email    = ""   # 行为准则申诉
+# 如有 PGP 公钥指纹，可在此登记（公钥本身放仓库或 keyserver，不放私钥）。
+security_pgp     = ""
+
+[repository]
+# 代码托管现状：仅本地 git；尚未选定远端。
+# 说明（D-018）：当前登录的 GitHub 账号非本人，暂不推送到任何远端。
+# 选定远端后回填，并据此更新：CHANGELOG.md 链接、.github/ISSUE_TEMPLATE/config.yml、.github/CODEOWNERS
+host             = "local"   # local | github | gitlab | gitea | ...
+url              = ""        # 远端仓库 URL（待定）
+owner            = ""        # 组织/用户名（待定）
+
+[maintainers]
+# 维护者/评审人标识（.github/CODEOWNERS 用）。当前单人开发，待定。
+default          = []        # 例：["@yourname"]
+security         = []

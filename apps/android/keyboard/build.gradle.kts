@@ -1,4 +1,4 @@
-// keyboard：安全键盘 IME 模块（L4 实现）。当前为骨架，仅依赖 core-bindings。
+// keyboard：安全键盘 IME 模块（L4-KBD）。经 :vault-data 复用核心桥接；为跨进程独立会话。
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -22,5 +22,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core-bindings"))
+    implementation(project(":vault-data"))
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.kotlinx.coroutines.android)
 }

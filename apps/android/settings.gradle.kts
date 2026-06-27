@@ -18,4 +18,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "private-input-vault-android"
 
-include(":app", ":keyboard", ":core-bindings")
+include(":app", ":keyboard", ":core-bindings", ":vault-data")

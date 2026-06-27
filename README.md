@@ -64,3 +64,23 @@ tools/            迁移、备份、打包和开发工具占位
 - [数据模型](docs/technical/data-model.md)
 - [测试策略](docs/testing/test-strategy.md)
 - [测试计划](docs/testing/test-plan.md)
+
+## 参与贡献
+
+欢迎贡献。动手前请阅读：
+
+- [贡献指南](CONTRIBUTING.md)：开发环境、分支策略、Conventional Commits、DCO、PR 流程、安全红线。
+- [编码规范](docs/technical/coding-standards.md) 与 [工程基础](docs/technical/engineering-foundation.md)。
+- [行为准则](CODE_OF_CONDUCT.md)。
+- [发布流程与版本号策略](docs/technical/release-process.md)。
+- [更新日志](CHANGELOG.md)。
+- 给 AI 助手/协作者的工作约定：[AGENTS.md](AGENTS.md)。
+- 可配置项（署名、联系方式、远端仓库、版本等）集中在 [project-config.toml](project-config.toml)，发布前统一在此修改。
+
+## 安全
+
+这是一个以安全为第一要务的产品。**安全漏洞请勿公开提交 issue**，请按 [安全策略](SECURITY.md) 私下报告。
+
+## 许可
+
+本项目以 [Apache License 2.0](LICENSE) 开源（见 [NOTICE](NOTICE) 的第三方组件声明）。Apache-2.0 在「开源共享」的同时，明确**不提供任何担保、不承担责任**，且要求修改版本标注改动——我们不对第三方发布的修改/衍生版本负责。

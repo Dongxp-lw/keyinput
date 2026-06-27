@@ -1,0 +1,10 @@
+# 注意：下列 URL 为占位（选定远端仓库后据 project-config.toml 的 [repository].url 回填）。
+# 当前仅本地 git、未设远端，本文件在推送到 GitHub 前不生效（D-018）。
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 安全漏洞报告
+    url: https://github.com/private-input-vault/private-input-vault/security/advisories/new
+    about: 安全漏洞请勿公开提交 issue，请通过私有安全通报（见 SECURITY.md）报告。
+  - name: 💬 使用问题与讨论
+    url: https://github.com/private-input-vault/private-input-vault/discussions
+    about: 使用疑问、设计讨论请到 Discussions。
