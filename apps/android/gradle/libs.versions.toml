@@ -7,7 +7,7 @@ androidxTestExtJunit = "1.2.1"
 coreKtx = "1.15.0"
 activityCompose = "1.9.3"
 composeBom = "2024.12.01"
-lifecycle = "2.8.7"
+lifecycle = "2.11.0"
 biometric = "1.1.0"
 # androidx.biometric 1.1.0 会传递引入 androidx.fragment 1.2.5（旧），其 FragmentActivity.startActivityForResult
 # 会拒绝 >16 位 requestCode，与现代 ActivityResultRegistry（activity 1.9.x，rememberLauncherForActivityResult）
