@@ -25,7 +25,7 @@ jobs:
     name: Rust 核心（fmt + clippy + test/KAT）
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: 安装 Rust 工具链（stable + clippy + rustfmt）
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -49,7 +49,7 @@ jobs:
       # 与本机/工程一致的 NDK 版本（D-013）。
       NDK_VERSION: "27.3.13750724"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: 安装 JDK 17（Temurin）
         uses: actions/setup-java@v4
         with:
@@ -87,7 +87,7 @@ jobs:
     name: 安全门（日志扫描 + 无 INTERNET）
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: 禁止在发布代码中记日志（启发式扫描，不得泄露秘密）
         run: |
           set -euo pipefail
@@ -116,7 +116,7 @@ jobs:
     name: 供应链门（cargo-deny：许可证 + 公告 + 来源）
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # 据 deny.toml 校验：许可证白名单、RustSec 安全公告、依赖来源、重复版本。
       - name: cargo-deny check
         uses: EmbarkStudios/cargo-deny-action@v2
