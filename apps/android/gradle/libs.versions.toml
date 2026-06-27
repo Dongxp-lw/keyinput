@@ -13,7 +13,7 @@ biometric = "1.1.0"
 # 会拒绝 >16 位 requestCode，与现代 ActivityResultRegistry（activity 1.9.x，rememberLauncherForActivityResult）
 # 冲突，导致 SAF 导出/导入 launch 时崩溃。显式提到 1.8.5（≥1.3.0 已修复）。
 fragment = "1.8.5"
-coroutines = "1.9.0"
+coroutines = "1.11.0"
 zxingEmbedded = "4.3.0"
 
 [libraries]
