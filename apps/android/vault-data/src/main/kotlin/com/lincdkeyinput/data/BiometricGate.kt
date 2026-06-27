@@ -14,6 +14,8 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * 生物识别解锁门控（L4-BIO）。
@@ -90,46 +92,54 @@ class BiometricGate(context: Context) {
      * 用生物识别解锁：认证成功后解密出主密码字节，交给 [onSuccess]。
      * 调用方负责在用完后把回调里的字节清零。
      */
-    fun unlock(
+    suspend fun unlock(
         activity: FragmentActivity,
         onSuccess: (masterPassword: ByteArray) -> Unit,
         onError: (String) -> Unit,
     ) {
-        val data = try {
-            bioFile.readBytes()
-        } catch (e: Exception) {
-            onError("没有生物识别数据，请用主密码解锁")
-            return
+        // 读取密文 + 初始化 Keystore 解密 Cipher（磁盘/Keystore IO）放后台线程（StrictMode）；
+        // 准备好后回主线程展示 BiometricPrompt（BiometricPrompt 必须在主线程）。
+        val prep = withContext(Dispatchers.Default) {
+            val data = try {
+                bioFile.readBytes()
+            } catch (e: Exception) {
+                return@withContext UnlockPrep.Fail("没有生物识别数据，请用主密码解锁")
+            }
+            if (data.size <= IV_LEN) {
+                return@withContext UnlockPrep.Fail("生物识别数据损坏，请用主密码解锁")
+            }
+            val iv = data.copyOfRange(0, IV_LEN)
+            val ciphertext = data.copyOfRange(IV_LEN, data.size)
+            try {
+                UnlockPrep.Ready(decryptCipher(iv), ciphertext)
+            } catch (e: KeyPermanentlyInvalidatedException) {
+                disable()
+                UnlockPrep.Fail("生物识别已变更，请用主密码解锁")
+            } catch (e: Exception) {
+                UnlockPrep.Fail("无法初始化密钥：${e.message}")
+            }
         }
-        if (data.size <= IV_LEN) {
-            onError("生物识别数据损坏，请用主密码解锁")
-            return
+        when (prep) {
+            is UnlockPrep.Fail -> onError(prep.message)
+            is UnlockPrep.Ready -> prompt(
+                activity = activity,
+                title = "用生物识别解锁",
+                cipher = prep.cipher,
+                onSuccess = { c ->
+                    try {
+                        onSuccess(c.doFinal(prep.ciphertext))
+                    } catch (e: Exception) {
+                        onError("解密失败：${e.message}")
+                    }
+                },
+                onError = onError,
+            )
         }
-        val iv = data.copyOfRange(0, IV_LEN)
-        val ciphertext = data.copyOfRange(IV_LEN, data.size)
-        val cipher = try {
-            decryptCipher(iv)
-        } catch (e: KeyPermanentlyInvalidatedException) {
-            disable()
-            onError("生物识别已变更，请用主密码解锁")
-            return
-        } catch (e: Exception) {
-            onError("无法初始化密钥：${e.message}")
-            return
-        }
-        prompt(
-            activity = activity,
-            title = "用生物识别解锁",
-            cipher = cipher,
-            onSuccess = { c ->
-                try {
-                    onSuccess(c.doFinal(ciphertext))
-                } catch (e: Exception) {
-                    onError("解密失败：${e.message}")
-                }
-            },
-            onError = onError,
-        )
+    }
+
+    private sealed interface UnlockPrep {
+        data class Ready(val cipher: Cipher, val ciphertext: ByteArray) : UnlockPrep
+        data class Fail(val message: String) : UnlockPrep
     }
 
     private fun prompt(

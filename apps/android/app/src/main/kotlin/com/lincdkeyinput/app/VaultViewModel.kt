@@ -180,11 +180,13 @@ class VaultViewModel(app: Application) : AndroidViewModel(app) {
 
     /** 用生物识别解锁：认证成功后取回主密码字节，复用主密码解锁路径，用完即清零。 */
     fun biometricUnlock(activity: FragmentActivity) {
-        gate.unlock(
-            activity = activity,
-            onSuccess = { masterPassword -> unlock(masterPassword) },
-            onError = { msg -> _message.value = msg },
-        )
+        viewModelScope.launch {
+            gate.unlock(
+                activity = activity,
+                onSuccess = { masterPassword -> unlock(masterPassword) },
+                onError = { msg -> _message.value = msg },
+            )
+        }
     }
 
     /** 在设置中启用生物识别：需要用户重新输入主密码以便加密落盘。 */
