@@ -64,7 +64,7 @@ jobs:
       - name: 安装 cargo-ndk
         run: cargo install cargo-ndk --version 4.1.2 --locked
       - name: 配置 Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
       - name: 安装 NDK r27
         run: sdkmanager "ndk;${NDK_VERSION}"
       - name: 导出 ANDROID_NDK_HOME（cargo-ndk 据此交叉编译）
