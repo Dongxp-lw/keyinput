@@ -34,7 +34,7 @@
 - 错口令与数据篡改在错误模型上不可区分（`WrongPasswordOrTampered`）。
 - 开发构建启用 `StrictMode`；`usesCleartextTraffic=false` + network security config。
 
-<!-- 比较 / 发布链接：选定远端仓库后，据 project-config.toml 的 [repository].url 回填，例如：
-[Unreleased]: <repo-url>/compare/v0.2.0...HEAD
-[0.2.0]: <repo-url>/releases/tag/v0.2.0
-当前仅本地 git、未设远端（D-018），暂不提供外链。 -->
+<!-- 比较 / 发布链接：打 release tag 后填，例如：
+[Unreleased]: https://github.com/Dongxp-lw/keyinput/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Dongxp-lw/keyinput/releases/tag/v0.2.0
+当前尚未打 release tag。 -->

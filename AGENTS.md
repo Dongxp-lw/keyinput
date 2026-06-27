@@ -22,7 +22,7 @@
 ## 协作约定
 
 - **不要擅自 `git commit` 或 `git push`**，除非用户明确要求。
-- 当前**仅本地 git**，不推送任何远端（当前登录的 GitHub 账号非本人，见 [D-018](.agent/decisions.md)）。可配置项集中在 [project-config.toml](project-config.toml)。
+- 远端 = `github.com:Dongxp-lw/keyinput`（默认分支 `main`）；提交身份 `linc <2250479723@qq.com>`（仓库本地配置，未改全局）。**仍不擅自 commit/push，除非用户要求**（D-018）。可配置项集中在 [project-config.toml](project-config.toml)。
 - **不要新建总结类 / changelog 类 .md 文件**来"汇报改动"，除非用户要求（`CHANGELOG.md` 例外，按规范维护）。
 - 诚实区分「**编译通过**」与「**运行期已验证**」；不夸大完成度，未验证就标未验证。
 - 不在事实之外迎合；上游/用户有误要直接指出。

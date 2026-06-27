@@ -1,22 +1,18 @@
 # CODEOWNERS：定义各路径的默认评审人，PR 会自动请求其评审。
 # https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 #
-# 说明：维护者标识集中登记在 project-config.toml 的 [maintainers]。
-# 选定远端与真实账号后，把下面的占位 @private-input-vault/* 替换为真实用户名/团队。
-# 当前仅本地 git、单人开发，本文件在推送前不生效（D-018）。
+# 维护者标识集中登记在 project-config.toml 的 [maintainers]。当前单人开发，统一为仓库所有者。
 
 # 默认所有改动
-*                                   @private-input-vault/maintainers
+*                                   @Dongxp-lw
 
-# 安全关键路径需要安全/加密负责人评审
-/core/vault-core/                   @private-input-vault/security
-/docs/technical/security-model.md           @private-input-vault/security
-/docs/technical/security-implementation-design.md  @private-input-vault/security
-/apps/android/vault-data/           @private-input-vault/security
-/apps/android/keyboard/             @private-input-vault/security
-
-# 工程治理与 CI
-/.github/                           @private-input-vault/maintainers
-/LICENSE                            @private-input-vault/maintainers
-/NOTICE                             @private-input-vault/maintainers
-/SECURITY.md                        @private-input-vault/security
+# 安全关键路径
+/core/vault-core/                   @Dongxp-lw
+/apps/android/vault-data/           @Dongxp-lw
+/apps/android/keyboard/             @Dongxp-lw
+/docs/technical/security-model.md   @Dongxp-lw
+/docs/technical/security-implementation-design.md  @Dongxp-lw
+/.github/                           @Dongxp-lw
+/LICENSE                            @Dongxp-lw
+/NOTICE                             @Dongxp-lw
+/SECURITY.md                        @Dongxp-lw

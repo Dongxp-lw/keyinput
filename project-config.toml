@@ -35,14 +35,13 @@ conduct_email    = ""   # 行为准则申诉
 security_pgp     = ""
 
 [repository]
-# 代码托管现状：仅本地 git；尚未选定远端。
-# 说明（D-018）：当前登录的 GitHub 账号非本人，暂不推送到任何远端。
-# 选定远端后回填，并据此更新：CHANGELOG.md 链接、.github/ISSUE_TEMPLATE/config.yml、.github/CODEOWNERS
-host             = "local"   # local | github | gitlab | gitea | ...
-url              = ""        # 远端仓库 URL（待定）
-owner            = ""        # 组织/用户名（待定）
+# 代码托管：远端 = github.com:Dongxp-lw/keyinput（默认分支 main）。
+# 提交身份用 linc <2250479723@qq.com>（仓库本地 git 配置，不影响全局）。
+host             = "github"
+url              = "git@github.com:Dongxp-lw/keyinput.git"
+owner            = "Dongxp-lw"
 
 [maintainers]
-# 维护者/评审人标识（.github/CODEOWNERS 用）。当前单人开发，待定。
-default          = []        # 例：["@yourname"]
-security         = []
+# 维护者/评审人标识（.github/CODEOWNERS 用）。当前单人开发。
+default          = ["@Dongxp-lw"]
+security         = ["@Dongxp-lw"]
